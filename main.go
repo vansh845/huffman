@@ -80,9 +80,12 @@ func consHuffTree(huffSlice []HuffBase) HuffInternal{
     huffSlice = slices.Concat(temp,huffSlice[i:])
 
   }
-  fmt.Println(huffSlice,len(huffSlice))
   
-  return HuffInternal{}
+  if len(huffSlice) == 1{
+    return huffSlice[0].(HuffInternal)
+  }else{
+    return HuffInternal{}
+  }
 }
 
 func huffmanCoding(fd io.Reader) error{
@@ -119,6 +122,7 @@ func huffmanCoding(fd io.Reader) error{
       }
     }
     consHuffTree(huffSlice)
+    
     return nil
 }
 
