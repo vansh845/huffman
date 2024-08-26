@@ -48,7 +48,6 @@ func bucketSort(mp map[rune]int, length int) [][]rune {
   for k,v := range mp{
      bucket[v] = append(bucket[v],rune(k))
   }
-  fmt.Println(bucket)
   return bucket
 } 
 
@@ -81,11 +80,12 @@ func consHuffTree(huffSlice []HuffBase) HuffInternal{
     huffSlice = slices.Concat(temp,huffSlice[i:])
 
   }
-  fmt.Println(huffSlice)
+  fmt.Println(huffSlice,len(huffSlice))
+  
   return HuffInternal{}
 }
 
-func readCount(fd io.Reader) error{
+func huffmanCoding(fd io.Reader) error{
 
     rd := bufio.NewReader(fd)
     buff := make([]byte,1024*4)
@@ -118,7 +118,6 @@ func readCount(fd io.Reader) error{
          huffSlice = append(huffSlice, HuffLeaf{Freq: i,Char: rune(x)})
       }
     }
-    fmt.Println(huffSlice)
     consHuffTree(huffSlice)
     return nil
 }
@@ -138,7 +137,7 @@ func main(){
       if err != nil{
         log.Fatalln("file does not exits")
       }
-      err = readCount(fd)
+      err = huffmanCoding(fd)
       if err != nil{
         log.Fatal("Failed...")
       }
