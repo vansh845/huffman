@@ -10,8 +10,11 @@ import (
 )
 
 type HuffBase interface{
-  isLeaf() bool
+  isLeaf() (bool,HuffBase)
   getFreq() int
+  getLeft() HuffBase
+  getRight() HuffBase
+  getChar() rune
 
 }
 
@@ -20,13 +23,24 @@ type HuffLeaf struct{
   Char rune
 }
 
-func (h HuffLeaf) isLeaf() bool{
-  return true
+func (h HuffLeaf) isLeaf() (bool,HuffBase){
+  return true,h
 }
 
+func (h HuffLeaf) getLeft() HuffBase {
+  return nil
+}
+
+func (h HuffLeaf) getRight() HuffBase{
+  return nil
+}
 
 func (h HuffLeaf) getFreq() int{
   return h.Freq
+}
+
+func (h HuffLeaf) getChar() rune{
+  return h.Char
 }
 
 type HuffInternal struct{
@@ -35,12 +49,23 @@ type HuffInternal struct{
   Right HuffBase
 }
 
+func (h HuffInternal) getLeft() HuffBase {
+  return h.Left
+}
+
+func (h HuffInternal) getRight() HuffBase{
+  return h.Right
+}
 func (h HuffInternal) getFreq() int{
   return h.Freq
 }
 
-func (h HuffInternal) isLeaf() bool{
-  return false
+func (h HuffInternal) isLeaf() (bool,HuffBase){
+  return false,h
+}
+
+func (h HuffInternal) getChar() rune{
+  return ' '
 }
 
 func bucketSort(mp map[rune]int, length int) [][]rune {
@@ -88,6 +113,18 @@ func consHuffTree(huffSlice []HuffBase) HuffInternal{
   }
 }
 
+func dfs(node HuffBase,str string, codes map[rune]string){
+  isLeaf , x := node.isLeaf()
+  if isLeaf {
+    codes[node.getChar()] = str
+    return
+  }
+
+  dfs(x.getLeft(),fmt.Sprintf("%s0",str),codes)
+  dfs(x.getRight(),fmt.Sprintf("%s1",str),codes)
+  
+}
+
 func huffmanCoding(fd io.Reader) error{
 
     rd := bufio.NewReader(fd)
@@ -107,8 +144,7 @@ func huffmanCoding(fd io.Reader) error{
 
     }
     max := 0
-    for k,v := range count{
-      fmt.Printf("%q - %d\n",k,v)
+    for _,v := range count{
       if v > max{
         max = v
       }
@@ -121,7 +157,13 @@ func huffmanCoding(fd io.Reader) error{
          huffSlice = append(huffSlice, HuffLeaf{Freq: i,Char: rune(x)})
       }
     }
-    consHuffTree(huffSlice)
+    huffTree := consHuffTree(huffSlice)
+    
+    var huffCodes map[rune]string = make(map[rune]string)
+    dfs(huffTree,"",huffCodes)
+    for k,v := range huffCodes{
+      fmt.Printf("%q - %q\n",k,v)
+    }
     
     return nil
 }
